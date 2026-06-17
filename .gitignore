@@ -15,9 +15,7 @@ Thumbs.db
 .idea/
 *.swp
 
-# Données (formatrice fournit les CSV via Discord)
-data/*.csv
-data/*.parquet
+# Données 
 !data/.gitkeep
 
 # Modèles spaCy téléchargés
