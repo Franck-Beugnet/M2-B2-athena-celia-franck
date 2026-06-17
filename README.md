@@ -157,3 +157,15 @@ Cf. [`./ressources/README.md`](./ressources/README.md) pour l'ordre de mobilisat
 4. En binôme : si vous bloquez à 2, **switchez** driver/navigator —
    souvent ça débloque.
 5. Demande en direct mercredi sur Discord — `fil-M2-B2`.
+
+---
+
+## Livrables perso — Franck
+
+Branche de travail : `anonymisation/franck`
+
+- Fonction réutilisable : `src/anonymize.py`
+   - API principale : `anonymizecomments(text: str) -> str`
+- Donnée anonymisée : `data/auditsample_anonymized_franck.csv`
+- Notebook perso : `notebooks/M2-B2_anonymisation_franck.ipynb`
+- Réflexion perso : `reflexion.md`
