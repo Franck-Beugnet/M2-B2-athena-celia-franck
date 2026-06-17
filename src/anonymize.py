@@ -1,20 +1,21 @@
-"""M2-B2 — Fonction d'anonymisation à compléter (phase async individuelle).
+"""M2-B2 — Anonymisation de commentaires manager selon la stratégie reflexion.md
 
-Tu choisis ta stratégie et tu la défends dans `reflexion.md` :
-- Suppression : remplacer l'entité par `[REDACTED]` ou `[NAME]`
-- Substitution : Faker côté apprenant, ré-injection
-- Généralisation : remplacer par un rôle (`[MANAGER]`, `[EMPLOYEE]`)
-- Hash : empreinte irréversible
-
-Le squelette pose la signature minimale. À toi de remplir.
+Stratégie appliquée :
+- PERSON : Substitution sans mapping → remplacé par noms fictifs Faker aléatoires
+- EMAIL, PHONE, IBAN : Suppression
+- ORG, GPE, LOC : Aucune (données peu sensibles)
 """
 from __future__ import annotations
 
 import re
+import spacy
+from faker import Faker
 
-# TODO — charger le modèle spaCy une seule fois (au module load, pas dans la fonction)
-# import spacy
-# NLP = spacy.load("en_core_web_md")  # ou "fr_core_news_md" selon ton dataset
+# Initialiser Faker (seed pour reproduisibilité en tests)
+fake = Faker()
+
+# Charger le modèle spaCy une seule fois au niveau module
+NLP = spacy.load("en_core_web_sm")
 
 # Regex de complément (spaCy ne couvre pas tout — email, IBAN partiel, téléphone US)
 EMAIL_RE = re.compile(r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b")
@@ -22,24 +23,44 @@ PHONE_RE = re.compile(r"\b\d{3}[.-]?\d{3}[.-]?\d{4}\b")
 IBAN_PARTIAL_RE = re.compile(r"\*{2,}\d{4}")
 
 
-def anonymize_comments(text: str) -> str:
-    """Anonymise un commentaire manager.
+def anonymize_comments(text: str, random_seed: int | None = None) -> str:
+    """Anonymise un commentaire manager selon stratégie reflexion.md.
+
+    Stratégie :
+    - PERSON : remplacé par noms fictifs Faker aléatoires (substitution sans mapping)
+    - EMAIL, PHONE, IBAN : supprimé (remplacé par [EMAIL], [PHONE], [IBAN])
+    - ORG, GPE, LOC : non modifiés (données peu sensibles)
 
     Args:
         text: Texte libre potentiellement contenant des PII.
+        random_seed: Seed optionnel pour Faker (pour tests reproductibles).
 
     Returns:
-        Texte anonymisé selon la stratégie choisie.
+        Texte anonymisé.
     """
-    # TODO 1 — Détecter les entités avec spaCy (PERSON, GPE, ORG)
-    # doc = NLP(text)
-    # for ent in doc.ents:
-    #     if ent.label_ == "PERSON":
-    #         # ⬇️ Applique TA stratégie (suppression / généralisation /
-    #         #    substitution / hash) — à défendre dans reflexion.md
-    #         text = text.replace(ent.text, ...)  # à compléter
+    if not text or not isinstance(text, str):
+        return text
 
-    # TODO 2 — Compléter avec regex (spaCy ne détecte ni email ni IBAN partiel ni tel)
+    # Optionnellement définir la seed pour la reproductibilité
+    if random_seed is not None:
+        fake_local = Faker()
+        fake_local.seed_instance(random_seed)
+    else:
+        fake_local = fake
+
+    # Étape 1 — Détection et remplacement PERSON avec spaCy + Faker
+    doc = NLP(text)
+    
+    # Collecter les entités PERSON triées par position décroissante
+    # (pour remplacer de droite à gauche et ne pas bousiller les indices)
+    person_entities = [ent for ent in doc.ents if ent.label_ == "PERSON"]
+    
+    # Remplacer de droite à gauche par des noms fictifs
+    for ent in sorted(person_entities, key=lambda e: e.start_char, reverse=True):
+        fake_name = fake_local.name()
+        text = text[:ent.start_char] + fake_name + text[ent.end_char:]
+
+    # Étape 2 — Suppression des PII par regex (email, téléphone, IBAN)
     text = EMAIL_RE.sub("[EMAIL]", text)
     text = PHONE_RE.sub("[PHONE]", text)
     text = IBAN_PARTIAL_RE.sub("[IBAN]", text)
@@ -55,4 +76,15 @@ if __name__ == "__main__":
         "Budget pre-approved on account ****3503."
     )
     print("Avant :", sample)
-    print("Après :", anonymize_comments(sample))
+    result = anonymize_comments(sample)
+    print("Après :", result)
+    print()
+    
+    # Test avec plusieurs noms
+    sample2 = (
+        "John Doe and Jane Smith performed well. "
+        "Contact: john.doe@company.com or jane.smith@mail.fr. "
+        "Phone: 555-123-4567."
+    )
+    print("Avant :", sample2)
+    print("Après :", anonymize_comments(sample2))
