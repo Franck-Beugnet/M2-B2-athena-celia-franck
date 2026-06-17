@@ -5,6 +5,8 @@
 > Public : Marianne (évaluation) + futur toi qui relit ce repo.
 
 ---
+## Typologie des données
+En analysant les données avec regex et spaCY NER, on s'aperçoit qu'il y a plusieurs types à anonymiser, et que selon la langue configurée, ils ne sont pas détectée de la meme façon.
 
 ## Ma stratégie d'anonymisation
 
