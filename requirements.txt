@@ -14,6 +14,7 @@ seaborn==0.13.2
 
 # NLP — détection PII
 spacy==3.7.5
+en_core_web_sm=
 # click requis explicitement : depuis typer 0.13+, `typer-slim` n'embarque
 # plus click, et spacy 3.7.5 (via sa CLI) en a besoin pour s'importer. Sans ce
 # pin, un install frais casse sur `ModuleNotFoundError: No module named 'click'`.

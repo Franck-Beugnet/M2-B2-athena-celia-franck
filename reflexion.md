@@ -48,29 +48,31 @@ Le choix 2 privilégie une anonymisation par suppression, plus forte, mais qui a
 ## Cadre réglementaire — RGPD + AI Act
 
 > Deux textes, deux angles : positionne tes choix face aux **deux**.
-TODO
+
 - **RGPD** (données personnelles) : minimisation, finalité, droit à l'effacement.
-  Mon anonymisation y répond par : ...
+  Mon anonymisation y répond par : la suppression et la substitution irréversible des entités fortement identifiantes (PERSON, EMAIL, IBAN, PHONE). En ne conservant aucune table de correspondance (mapping), on sort du cadre de la pseudonymisation pour atteindre une véritable anonymisation. La donnée n'est alors plus soumise au RGPD, tout en préservant son utilité analytique (minimisation des données).
 - **AI Act** (règlement UE 2024, risque classé par usage) : un système qui exploite
   des **commentaires RH** pour évaluer des personnes relève potentiellement du
   **« haut risque »** (emploi / gestion des travailleurs = Annexe III) → exigences
   renforcées de **qualité des données, traçabilité et supervision humaine**. En quoi
-  mon audit + mon anonymisation y contribuent : ...
+  mon audit + mon anonymisation y contribuent : ils permettent de garantir que le système s'entraîne ou s'exécute sur des données expurgées de biais d'identification directe, réduisant ainsi le risque de discrimination ciblée. La démarche traçable que nous documentons ici assure que les obligations de gouvernance des données sont respectées.
 
 ## Limites de ma stratégie
-TODO
+
 > Qu'est-ce que ma fonction `anonymize_comments` rate ? Quels faux positifs
 > ou faux négatifs ai-je observés sur l'échantillon ?
 
-- Faux négatifs (PII non détectées) : ...
-- Faux positifs (texte normal anonymisé à tort) : ...
+- Faux négatifs (PII non détectées) : spaCy peine parfois à détecter des noms propres plus rares, mal orthographiés ou sans majuscule. De plus, la conservation de certains champs (ORG, LOC, GPE) couplée à un intitulé de poste (ex: "Le directeur de l'agence de Paris") peut créer des données proxy permettant la ré-identification d'une personne sans les champs PII classiques. Les Regex peuvent aussi rater un éventuel format international atypique.
+- Faux positifs (texte normal anonymisé à tort) : spaCy peut confondre des mots communs placés en début de phrase ou des noms de produits avec des noms de personnes (PERSON). Certaines combinaisons de chiffres inoffensives peuvent être interprétées par erreur comme des IBANs ou téléphones si les Regex ne sont pas assez ciblées.
 
 ## Si je devais industrialiser
-TODO
+
 > Que faudrait-il ajouter pour une vraie mise en production (M5+) ?
 
-- ...
+- **Outils spécialisés** : Intégrer une librairie orientée PII comme Microsoft Presidio, plus robuste et personnalisable que spaCy brut pour la détection fine des données sensibles, avec des "recognizers" par contexte.
+- **Monitoring et Évaluation Systématique** : Mettre en place un benchmark (Precision / Recall) de notre pipeline sur un dataset de référence annoté manuellement, pour valider que le taux de re-identification est bien sous des seuils acceptables.
+- **Human in the Loop** : Isoler les textes ayant un faible score de confiance dans le NER et les attribuer à une supervision humaine (Data Stewards) en vue de fine-tuner ponctuellement notre modèle spaCy aux spécificités de notre domaine.
 
 ---
 
-*Note rédigée par <prénom>, <date>, dans le cadre du brief M2-B2 ATOS.*
+*Note rédigée par Célia, 2026-06-22, dans le cadre du brief M2-B2 ATOS.*

@@ -1,18 +1,18 @@
 # M2-B2 — Squelette repo (Athéna RH — audit éthique + anonymisation)
 
-> **Repo template GitHub.** Clique sur **« Use this template »** en haut à
-> droite de cette page → **Create a new repository**.
->
-> **2 modalités selon la phase** :
-> - **Sync mercredi (binôme)** : nomme ton repo `M2-B2-athena-<prénom1>-<prénom2>`
->   sur le compte de l'un de vous deux. L'autre est invité comme collaborateur.
-> - **Async jeudi/vendredi (perso)** : **fork** le repo binôme sous
->   `M2-B2-athena-<prénom>` sur ton compte perso. Tu travailles sur la branche
->   `anonymisation/<prénom>`.
+---
+
+## �️ Ce qui a été réalisé
+
+Durant ce projet, les tâches suivantes ont été menées à bien :
+- **Analyse des données et Audit Éthique** : Le notebook [`notebooks/M2-B2_audit_celia_franck.ipynb`](notebooks/M2-B2_audit_celia_franck.ipynb) rassemble notre travail d'exploration (EDA) ainsi que le calcul du *Disparate Impact* croisé sur les variables sensibles (intersectionnalité) pour identifier les sources de biais potentielles de l'algorithme. 
+  👉 La consolidation de cette analyse et de la vie de la donnée se trouve résumée dans notre [datasheet.md](datasheet.md).
+- **Anonymisation Stratégique** : Le notebook [`notebooks/M2-B2-anonymization.ipynb`](notebooks/M2-B2-anonymization.ipynb) met en pratique et expérimente la stratégie développée dans le script d'industrialisation [`src/anonymize.py`](src/anonymize.py). Cette étape combine *Name Entity Recognition* (via `spaCy`), des Regex et de la substitution artificielle (via `Faker`) pour conformer les commentaires RH aux exigences légales.
+La réfléxion qui a accompagnée l'anonymisation, le choix de la stratégie et ses limites se trouve dans le fichier [reflexion.md](reflexion.md).
 
 ---
 
-## 🚀 Démarrage
+## �🚀 Démarrage
 
 ```bash
 # 0. Clone ton repo perso (ou binôme)
@@ -38,58 +38,32 @@ jupyter notebook notebooks/M2-B2_audit_template.ipynb
 
 Si ça démarre sans erreur, ton poste est prêt.
 
-> 📦 Les datasets `adult_income_with_comments.csv` (~32 561 lignes) et
-> `audit_sample.csv` (200 lignes) sont **fournis par la formatrice via
-> Discord** (`fil-M2-B2`) mercredi 9h — tout le monde reçoit le **même** jeu
-> (graine fixe), indispensable pour comparer les disparate impacts en
-> restitution. Ils sont git-ignorés : on ne commite pas la donnée.
->
-> ⚠️ **Corpus bilingue volontaire** : ~88 % des commentaires sont en anglais,
-> ~12 % en français. Le modèle `en_core_web_md` attrapera bien les noms
-> anglais et **ratera une partie des noms français** : c'est un piège réaliste.
-> Tu le **documentes** comme une limite de ta détection (à compléter par regex
-> ou à signaler) — tu ne changes pas de modèle à chaque commentaire.
-
 ---
 
-## 📁 Structure du repo
+## 📁 Structure du repo (Actuelle)
 
-### Phase sync (binôme)
+Voici l'arborescence finale du projet avec les fichiers produits lors de nos expérimentations :
 
-```
-M2-B2-athena-<prénom1>-<prénom2>/
-├── data/                                         # gitignored
-│   ├── adult_income_with_comments.csv            # fourni via Discord
-│   └── audit_sample.csv                          # fourni via Discord
+```text
+M2-B2-athena-celia-franck/
+├── data/                                         # Fichiers de données (gitignored)
+│   ├── adult_income_with_comments.csv            # Jeu fourni via Discord
+│   ├── audit_sample.csv                          # Échantillon fourni pour l'anonymisation
+│   └── audit_sample_anonymized.csv               # Fichier généré après lancement du script d'anonymisation
 ├── notebooks/
-│   └── M2-B2_audit_template.ipynb                # → audit_<prénom1>_<prénom2>.ipynb
-├── datasheet.md                                  # à compléter en binôme (signature duo)
-├── README.md                                     # à compléter
-├── ressources/                                   # 📚 mini-cours d'appui
-│   ├── README.md
-│   ├── 01_Audit_ethique_complet_essentiel.md
-│   ├── 02_Datasheet_Gebru_complet_essentiel.md
-│   ├── 03_spaCy_NER_PII_essentiel.md
-│   ├── 04_Strategies_anonymisation_essentiel.md
-│   ├── 05_Presidio_alternative_essentiel.md
-│   ├── 06_Git_binome_essentiel.md
-│   └── liens_officiels.md
-├── requirements.txt
-└── .gitignore
-```
-
-### Phase async (perso, fork du repo binôme)
-
-```
-M2-B2-athena-<prénom>/
-├── (tout ce qui précède, héritage du binôme)
+│   ├── M2-B2_audit_celia_franck.ipynb            # Notebook d'analyse de données et d'audit du DI
+│   └── M2-B2-anonymization.ipynb                 # Notebook de démonstration de la fonction d'anonymisation
 ├── src/
-│   └── anonymize.py                              # à compléter — fonction perso
-├── data/
-│   └── audit_sample_anonymized_<prénom>.csv      # produit perso
-├── notebooks/
-│   └── M2-B2_anonymisation_<prénom>.ipynb        # livrable perso
-└── reflexion.md                                  # max 1 page perso
+│   └── anonymize.py                              # Script CLI final d'anonymisation (spaCy + Faker + Regex)
+├── datasheet.md                                  # Documentation du jeu de donnée (Gebru)
+├── reflexion.md                                  # Note de réflexion justifiant nos choix techniques (RGPD / AI Act)
+├── README.md                                     # Documentation du projet
+├── ressources/                                   # 📚 mini-cours d'appui
+│   ├── ...                                       # (Ressources fournies initialement)
+├── test_anonymize_simple.py                      # Tests
+├── test_demo.py                                  # Tests
+├── requirements.txt                              # Dépendances (pandas, spacy, faker, etc.)
+└── .gitignore
 ```
 
 ---

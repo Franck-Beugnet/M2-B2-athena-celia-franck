@@ -7,6 +7,9 @@ Stratégie appliquée :
 """
 from __future__ import annotations
 
+import argparse
+import sys
+import pandas as pd
 import re
 import spacy
 from faker import Faker
@@ -69,22 +72,47 @@ def anonymize_comments(text: str, random_seed: int | None = None) -> str:
 
 
 if __name__ == "__main__":
-    # Test rapide
-    sample = (
-        "Allison Hill is a strong promotion candidate this year. "
-        "Discussed with HR (Rhonda Smith, 651.216.1559). "
-        "Budget pre-approved on account ****3503."
-    )
-    print("Avant :", sample)
-    result = anonymize_comments(sample)
-    print("Après :", result)
-    print()
-    
-    # Test avec plusieurs noms
-    sample2 = (
-        "John Doe and Jane Smith performed well. "
-        "Contact: john.doe@company.com or jane.smith@mail.fr. "
-        "Phone: 555-123-4567."
-    )
-    print("Avant :", sample2)
-    print("Après :", anonymize_comments(sample2))
+    parser = argparse.ArgumentParser(description="Anonymise une colonne d'un fichier CSV.")
+    parser.add_argument("input_file", help="Chemin du fichier CSV en entrée.")
+    parser.add_argument("output_file", help="Chemin du fichier CSV en sortie.")
+    parser.add_argument("--col", default="comment", help="Nom de la colonne à anonymiser (défaut: 'comment').")
+    parser.add_argument("--seed", type=int, default=None, help="Seed optionnelle pour Faker (reproductibilité).")
+
+    # Si aucun argument n'est fourni, afficher les exemples d'origine, sinon traiter le fichier
+    if len(sys.argv) == 1:
+        print("💡 ASTUCE : Vous pouvez utiliser ce script sur un fichier CSV avec :")
+        print("   python src/anonymize.py data/entree.csv data/sortie.csv --col \"Commentaire\"\n")
+        
+        # Test rapide (fallback sans arguments)
+        sample = (
+            "Allison Hill is a strong promotion candidate this year. "
+            "Discussed with HR (Rhonda Smith, 651.216.1559). "
+            "Budget pre-approved on account ****3503."
+        )
+        print("--- TEST RAPIDE ---")
+        print("Avant :", sample)
+        print("Après :", anonymize_comments(sample))
+    else:
+        args = parser.parse_args()
+        
+        print(f"📂 Chargement de {args.input_file}...")
+        try:
+            df = pd.read_csv(args.input_file)
+        except Exception as e:
+            print(f"Erreur lors de la lecture du fichier : {e}")
+            sys.exit(1)
+            
+        if args.col not in df.columns:
+            print(f"Erreur : La colonne '{args.col}' n'existe pas dans le fichier.")
+            print(f"Colonnes disponibles : {list(df.columns)}")
+            sys.exit(1)
+            
+        print(f"🔍 Anonymisation de la colonne '{args.col}' en cours (cela peut prendre un instant)...")
+        # Appliquer la fonction, fillna("") pour éviter de crasher sur les NaN
+        df[args.col] = df[args.col].fillna("").astype(str).apply(
+            lambda x: anonymize_comments(x, random_seed=args.seed)
+        )
+        
+        print(f"💾 Sauvegarde dans {args.output_file}...")
+        df.to_csv(args.output_file, index=False)
+        print("Terminé !")
